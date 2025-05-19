@@ -5,7 +5,7 @@ import seaborn as sns
 from sklearn.impute import KNNImputer
 from sklearn.model_selection import train_test_split
 
-df = pd.read_csv("/Users/berkayalkan/PycharmProjects/PyhtonForDataScience/Capstone/covid.csv")
+df = pd.read_csv("/Capstone/data/covid.csv")
 
 print(df.head())
 print(df.info())
