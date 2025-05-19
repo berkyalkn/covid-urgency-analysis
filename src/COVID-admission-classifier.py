@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.impute import KNNImputer
 from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
 
 df = pd.read_csv("/Capstone/data/covid.csv")
 
@@ -77,9 +79,36 @@ plt.ylim(0,1)
 plt.grid(True, axis='y', linestyle='--', alpha=0.5)
 plt.show(block=True)
 
+
+
 df_train, df_test = train_test_split(df, test_size=0.3, random_state=60)
 
 df_train.to_csv("covid_train.csv", index=False)
 
 df_test.to_csv("covid_test.csv", index=False)
+
+
+df_train = pd.read_csv("/Capstone/data/covid_train.csv")
+df_train.head()
+
+df_test = pd.read_csv("/Capstone/data/covid_test.csv")
+df_test.head()
+
+X_train = df_train.drop(columns=['Urgency'])
+
+y_train = df_train['Urgency']
+
+
+X_test = df_test.drop(columns=['Urgency'])
+
+y_test = df_test['Urgency']
+
+model = KNeighborsClassifier(n_neighbors=5)
+
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+model_accuracy = accuracy_score(y_test, y_pred)
+print(f"Model Accuracy is {model_accuracy}")
 
