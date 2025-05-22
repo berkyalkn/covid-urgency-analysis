@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.impute import KNNImputer
@@ -7,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 
-df = pd.read_csv("/Capstone/data/covid.csv")
+df = pd.read_csv("/Users/berkayalkan/PycharmProjects/PyhtonForDataScience/Capstone/data/covid.csv")
 
 print(df.head())
 print(df.info())
@@ -88,10 +87,10 @@ df_train.to_csv("covid_train.csv", index=False)
 df_test.to_csv("covid_test.csv", index=False)
 
 
-df_train = pd.read_csv("/Capstone/data/covid_train.csv")
+df_train = pd.read_csv("/Users/berkayalkan/PycharmProjects/PyhtonForDataScience/Capstone/data/covid_train.csv")
 df_train.head()
 
-df_test = pd.read_csv("/Capstone/data/covid_test.csv")
+df_test = pd.read_csv("/Users/berkayalkan/PycharmProjects/PyhtonForDataScience/Capstone/data/covid_test.csv")
 df_test.head()
 
 X_train = df_train.drop(columns=['Urgency'])
@@ -112,3 +111,76 @@ y_pred = model.predict(X_test)
 model_accuracy = accuracy_score(y_test, y_pred)
 print(f"Model Accuracy is {model_accuracy}")
 
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
+
+X_train = df_train.drop(columns=["Urgency"])
+y_train = df_train["Urgency"]
+
+
+X_test = df_test.drop(columns=["Urgency"])
+y_test = df_test["Urgency"]
+
+
+knn_model = KNeighborsClassifier(n_neighbors=7)
+
+knn_model.fit(X_train, y_train)
+
+log_model =  LogisticRegression(max_iter=10000, C=0.1)
+
+log_model.fit(X_train, y_train)
+
+
+y_pred_knn = knn_model.predict(X_test)
+y_pred_log = log_model.predict(X_test)
+
+cm_knn = confusion_matrix(y_test, y_pred_knn)
+cm_log = confusion_matrix(y_test, y_pred_log)
+
+def plot_conf_matrix(cm, model_name):
+    plt.figure(figsize=(5, 4))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=["No Urgency", "Urgency"], yticklabels=["No Urgency", "Urgency"])
+    plt.title(f'Confusion Matrix for {model_name}')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.show(block=True)
+
+plot_conf_matrix(cm_knn, "kNN")
+plot_conf_matrix(cm_log, "Logistic Regression")
+
+def get_specificity(cm):
+    tn, fp, fn, tp = cm.ravel()
+    return tn / (tn + fp)
+
+metric_scores = {
+    "Accuracy": [
+        accuracy_score(y_test, y_pred_knn),
+        accuracy_score(y_test, y_pred_log)
+    ],
+    "Recall": [
+        recall_score(y_test, y_pred_knn),
+        recall_score(y_test, y_pred_log)
+    ],
+    "Specificity": [
+        get_specificity(cm_knn),
+        get_specificity(cm_log)
+    ],
+    "Precision": [
+        precision_score(y_test, y_pred_knn),
+        precision_score(y_test, y_pred_log)
+    ],
+    "F1-score": [
+        f1_score(y_test, y_pred_knn),
+        f1_score(y_test, y_pred_log)
+    ]
+}
+
+for metric, scores in metric_scores.items():
+    print(f"{metric} -> kNN: {scores[0]:.4f} | Logistic Regression: {scores[1]:.4f}")
+
+from sklearn.metrics import roc_auc_score
+
+roc_knn = roc_auc_score(y_test, knn_model.predict_proba(X_test)[:,1])
+roc_log = roc_auc_score(y_test, log_model.predict_proba(X_test)[:,1])
+
+print(f"ROC AUC -> kNN: {roc_knn:.4f} | Logistic Regression: {roc_log:.4f}")
