@@ -5,6 +5,7 @@ from sklearn.impute import KNNImputer
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
+import numpy as np
 
 df = pd.read_csv("/Users/berkayalkan/PycharmProjects/PyhtonForDataScience/Capstone/data/covid.csv")
 
@@ -200,3 +201,43 @@ y_pred_knn = knn.predict_proba(X_test)[:, 1]
 logreg = LogisticRegression(max_iter=10000, C=0.1, random_state=42)
 logreg.fit(X_train, y_train)
 y_pred_logreg = logreg.predict_proba(X_test)[:, 1]
+
+
+def get_thresholds(y_pred_proba):
+
+    unique_probas = np.unique(y_pred_proba)
+    unique_probas_sorted = np.sort(unique_probas)[::-1]
+    thresholds = np.insert(unique_probas_sorted, 0, 1.1)
+    thresholds = np.append(thresholds, 0)
+    return thresholds
+
+
+knn_thresholds = get_thresholds(y_pred_knn)
+
+logreg_thresholds = get_thresholds(y_pred_logreg)
+
+
+def get_fpr(y_true, y_pred_proba, threshold):
+    y_pred = (y_pred_proba >= threshold).astype(int)
+    FP = np.sum((y_true == 0) & (y_pred == 1))
+    TN = np.sum((y_true == 0) & (y_pred == 0))
+    return FP / (FP + TN) if (FP + TN) != 0 else 0
+
+
+def get_tpr(y_true, y_pred_proba, threshold):
+    y_pred = (y_pred_proba >= threshold).astype(int)
+    TP = np.sum((y_true == 1) & (y_pred == 1))
+    FN = np.sum((y_true == 1) & (y_pred == 0))
+    return TP / (TP + FN) if (TP + FN) != 0 else 0
+
+
+knn_fpr =  [get_fpr(y_test, y_pred_knn, t) for t in knn_thresholds]
+knn_tpr = [get_tpr(y_test, y_pred_knn, t) for t in knn_thresholds]
+
+logreg_fpr = [get_fpr(y_test, y_pred_logreg, t) for t in logreg_thresholds]
+logreg_tpr = [get_tpr(y_test, y_pred_logreg, t) for t in logreg_thresholds]
+
+knn_auc = roc_auc_score(y_test, y_pred_knn)
+
+logreg_auc = roc_auc_score(y_test, y_pred_logreg)
+
