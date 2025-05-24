@@ -241,3 +241,52 @@ knn_auc = roc_auc_score(y_test, y_pred_knn)
 
 logreg_auc = roc_auc_score(y_test, y_pred_logreg)
 
+# The ROC curve includes three shaded regions representing different real-world scenarios:
+# - Scenario 1 (Brazil): Prefers low false positive rates, even if true positive rates are moderate.
+# - Scenario 2 (Germany): Requires high true positive rates (TPR > 0.8); the system must be highly sensitive.
+# - Scenario 3 (India): Allows for moderate false positive rates, but overall model performance should still be reasonable.
+# These regions help visualize which model may be better suited for each scenario based on the trade-offs shown in the ROC curves.
+
+fig, ax = plt.subplots(figsize = (14,8))
+ax.plot(knn_fpr,
+        knn_tpr,
+        label=f'KNN (area = {knn_auc:.2f})',
+        color='g',
+        lw=3)
+
+ax.plot(logreg_fpr,
+        logreg_tpr,
+        label=f'Logistic Regression (area = {logreg_auc:.2f})',
+        color = 'purple',
+        lw=3)
+
+label_kwargs = {}
+label_kwargs['bbox'] = dict(
+    boxstyle='round, pad=0.3', color='lightgray', alpha=0.6
+)
+eps = 0.02
+for i in range(0, len(logreg_fpr),15):
+    threshold = str(np.round(logreg_thresholds[i], 2))
+    ax.annotate(threshold, (logreg_fpr[i], logreg_tpr[i]-eps), fontsize=12, color='purple', **label_kwargs)
+
+for i in range(0, len(knn_fpr)-1):
+    threshold = str(np.round(knn_thresholds[i], 2))
+    ax.annotate(threshold, (knn_fpr[i], knn_tpr[i]+eps), fontsize=12, color='green', **label_kwargs)
+
+ax.plot([0, 1], [0, 1], 'k--', label='Random Classifier')
+ax.fill_between([0,0.5],[0.5,0], color = 'red', alpha = 0.4, label='Scenario 1 - Brazil');
+ax.axhspan(0.8, 0.9, facecolor='y', alpha=0.4, label = 'Scenario 2 - Germany');
+ax.fill_between([0,1],[1,0],[0.5,-0.5], alpha = 0.4, color = 'blue', label = 'Scenario 3 - India');
+ax.set_xlim([0.0, 1.0]);
+ax.set_ylim([0.0, 1.05]);
+ax.set_xlabel('False Positive Rate', fontsize=20)
+ax.set_ylabel('True Positive Rate', fontsize=20)
+ax.set_title('Receiver Operating Characteristic', fontsize=20)
+ax.legend(loc="lower right", fontsize=15)
+plt.show(block=True)
+
+# Classifier selection based on real-world scenario constraints:
+# - BRAZIL: Logistic Regression with a high threshold to minimize false positives.
+# - GERMANY: Logistic Regression with a low threshold to ensure high true positive rates.
+# - INDIA: kNN classifier with a moderate threshold for a balanced trade-off between TPR and FPR.
+# These recommendations align with the shaded regions shown in the ROC curve plot.
