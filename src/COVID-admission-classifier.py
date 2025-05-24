@@ -184,3 +184,19 @@ roc_knn = roc_auc_score(y_test, knn_model.predict_proba(X_test)[:,1])
 roc_log = roc_auc_score(y_test, log_model.predict_proba(X_test)[:,1])
 
 print(f"ROC AUC -> kNN: {roc_knn:.4f} | Logistic Regression: {roc_log:.4f}")
+
+
+X_train = df_train.drop(columns=['Urgency'])
+y_train = df_train['Urgency']
+X_test = df_test.drop(columns=['Urgency'])
+y_test = df_test['Urgency']
+
+
+knn = KNeighborsClassifier(n_neighbors=7)
+knn.fit(X_train, y_train)
+y_pred_knn = knn.predict_proba(X_test)[:, 1]
+
+
+logreg = LogisticRegression(max_iter=10000, C=0.1, random_state=42)
+logreg.fit(X_train, y_train)
+y_pred_logreg = logreg.predict_proba(X_test)[:, 1]
