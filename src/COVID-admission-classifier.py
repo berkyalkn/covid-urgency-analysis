@@ -285,8 +285,17 @@ ax.set_title('Receiver Operating Characteristic', fontsize=20)
 ax.legend(loc="lower right", fontsize=15)
 plt.show(block=True)
 
-# Classifier selection based on real-world scenario constraints:
-# - BRAZIL: Logistic Regression with a high threshold to minimize false positives.
-# - GERMANY: Logistic Regression with a low threshold to ensure high true positive rates.
-# - INDIA: kNN classifier with a moderate threshold for a balanced trade-off between TPR and FPR.
-# These recommendations align with the shaded regions shown in the ROC curve plot.
+# Classifier selection based on different healthcare policy scenarios:
+#
+# - BRAZIL: Uses Logistic Regression with a high decision threshold.
+#   -> Aim: Avoid unnecessary hospitalizations (minimize false positives).
+#
+# - GERMANY: Uses Logistic Regression with a low threshold.
+#   -> Aim: Detect as many true emergencies as possible (maximize sensitivity / TPR).
+#
+# - INDIA: Uses k-Nearest Neighbors (kNN) with a moderate threshold.
+#   -> Aim: Balance between sensitivity and specificity for practical use.
+#
+# These recommendations are supported by the ROC curve analysis and the shaded regions
+# representing each scenario. This helps guide model deployment depending on country-specific
+# public health priorities and hospital resource constraints.
